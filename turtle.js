@@ -2,7 +2,7 @@
 
 var Turtle = (function() {
   var Turtle = function(pos, bearing) {
-    this.bearing = bearing || [0, 1];
+    this.bearing = bearing || [0, -1];
     this.pos = pos || [0, 0];
   };
 
@@ -21,11 +21,11 @@ var Turtle = (function() {
       return this;
     },
 
-    right: function(x) {
+    left: function(x) {
       return this.polr(x, Math.PI / 2.0);
     },
 
-    left: function(x) {
+    right: function(x) {
       return this.polr(x, -Math.PI / 2.0);
     },
 
@@ -42,12 +42,23 @@ var Turtle = (function() {
       return this.rot(deg2rad(deg));
     },
 
-    turnRight: function(deg) {
+    turnLeft: function(deg) {
       return this.turn(deg);
     },    
 
-    turnLeft: function(deg) {
+    turnRight: function(deg) {
       return this.turn(-deg);
+    },
+
+    turnToward: function(light, by) {
+      if (by === undefined) {
+        by = 1.0;
+      }
+      var rad = this.bearing.angle(light.sub(this.pos));
+      if (Math.abs(rad) > Math.PI) {
+        rad = -(rad % Math.PI);
+      }
+      return this.rot(rad * by);
     },
 
     rot: function(rad) {
@@ -55,8 +66,23 @@ var Turtle = (function() {
       return this;
     },
 
+    spawn: function() {
+      return new Turtle(this.pos, this.bearing);
+    },
   };
 
+  Object.defineProperties (Turtle.prototype, {
+    x: {
+      enumerable: true,
+      get: function() { return this.pos.x; },
+      set: function(x) { this.pos = [x, this.pos.y]; },
+    },
+    y: {
+      enumerable: true,
+      get: function() { return this.pos.y; },
+      set: function(y) { this.pos = [this.pos.x, y]; },
+    },
+  });
 
   return Turtle;
 })();

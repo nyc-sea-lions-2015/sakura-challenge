@@ -64,4 +64,11 @@ Each digit marks a different Branch object. So branch 0 has two children, 1
 and 2. Branch 2 has no children. Branch 1 has two children, 3 and 4. And so
 on. Branches 0, 1, 3 and 5 look like one branch because they're similar 
 
+TODO: details of branch design, randomization, printing.
+
+## 3. A slightly prettier tree ##
+
+Okay, now we have a bunch of connected branches which are at least doing
+something interesting. I promised you a painting, so let's get drawing!
+
 
