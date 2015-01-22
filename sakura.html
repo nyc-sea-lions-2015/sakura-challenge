@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Sakura, sakura</title>
+		<script src="turtle.js"></script>
+		<script src="sakura.js"></script>
+		<style>
+			code, canvas {
+				position: absolute;
+				left: 0; right: 0; top: 0; bottom: 0;
+				font-family: 'Source Code Pro', Menlo, monospace;
+				font-size: 12pt;
+				white-space: pre;
+			}
+
+		</style>
+	</head>
+	<body>
+		<code id="treebug">
+		</code>
+		<canvas id="sakura">
+		</canvas>
+		<script>
+			var tree = new Sakura(document.getElementById('sakura'),
+				document.getElementById('treebug'));
+		</script>
+	</body>
+</html>
