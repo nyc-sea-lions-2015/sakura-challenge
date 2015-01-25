@@ -175,15 +175,47 @@ var Turtle = (function() {
 		}
 	});
 
-	Array.prototype.at = function at(/* coords */) {
-		return Array.prototype.slice.apply(arguments).reduce(function(x, i) {
-			return x[i];
-		}, this);
-	}
+	Array.prototype.at = function at(i) {
+    return this[i];
+	};
 
 	Number.prototype.at = function at(/* coords */) {
 		return this.valueOf();
-	}
+	};
+
+  Number.prototype.gauss = function gauss(stdev) {
+    var a = (2 * Math.random()) - 1.0;
+    var b = (2 * Math.random()) - 1.0;
+    var c = (2 * Math.random()) - 1.0;
+    var g = a + b + c;
+    if (stdev !== undefined) {
+      g *= stdev; 
+    }
+    return this.valueOf() + g;
+  };
+
+  Array.prototype.gauss = function gauss(stdev) {
+    var i = this.length;
+    var r = [];
+    while(--i >= 0) {
+      r.unshift(this.at(i).gauss(stdev));
+    }
+    return r;
+  };
+
+  var Lerp = function(from, to) {
+    this.from = from;
+    this.to = to;
+    this.range = this.to.sub(this.from);
+  };
+
+  Lerp.prototype.t = function(t) {
+    return this.from.add(this.range.dotMul(t));
+  };
+
+  Array.prototype.to = function to(max) {
+    return new Lerp(this, max);
+  };
 
 	Array.prototype.add = function add(other) {
 		var i = this.length;
