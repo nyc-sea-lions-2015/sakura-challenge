@@ -147,3 +147,67 @@ Branch.prototype.debugPaint = function(ctx, turtle) {
     this.children[i].paint(ctx, turtle.spawn());
   }
 };
+
+
+var Synth = function(tree, interval) {
+  this.synth = T('pluck', {freq: 10});
+  this.synth.play();
+  this.queue = [];
+  this.interval = interval || 250; //{mean: 200, stdev: 25};
+  this.pluck = this.pluck.bind(this);
+  this.setNext();
+};
+
+Synth.prototype.setNext = function() {
+  window.setTimeout(this.pluck, this.interval);
+//    this.interval.mean.gauss(this.interval.stdev));
+};
+
+Synth.prototype.pluck = function() {
+  if (this.queue.length == 0) {
+    this.trace();
+  }
+
+  var freq = this.queue.shift();
+  if (freq) {
+    this.synth.set({freq: freq});
+    this.synth.bang();
+  }
+  this.setNext();
+};
+
+Synth.FREQ_RANGE = (50).to(500)
+
+Synth.prototype.trace = function() {
+  var ptr = tree.trunk;
+  while (ptr) {
+    var l2 = Math.log2(ptr.length);
+    this.queue.push(Synth.FREQ_RANGE.at(1.0 / Math.floor(l2)));
+    if (ptr.children.length == 0) { return; }    
+    ptr = ptr.children[Math.floor(Math.random() * ptr.children.length)];
+  }
+};
+
+Synth.chord = function(tree, num) {
+  var synths = [];
+  var i = num; while(--i >= 0) {
+    var synth = new Synth(tree);
+    synths.push(synth);
+  }
+  return synths;
+};
+
+/*
+  ctx.lineWidth = this.thickness;
+  ctx.beginPath();
+  ctx.moveTo(turtle.x, turtle.y);
+  turtle.turn(this.angle);
+  turtle.fwd(this.length);  
+  ctx.lineTo(turtle.x, turtle.y);
+  ctx.stroke();
+
+  var i = this.children.length;
+  while(--i >= 0) {
+    this.children[i].paint(ctx, turtle.spawn());
+  }
+};*/

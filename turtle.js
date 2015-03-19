@@ -213,6 +213,12 @@ var Turtle = (function() {
     return this.from.add(this.range.dotMul(t));
   };
 
+  Lerp.prototype.at = Lerp.prototype.t;
+
+  Number.prototype.to = function to(max) {
+    return new Lerp(this, max);
+  }
+
   Array.prototype.to = function to(max) {
     return new Lerp(this, max);
   };
