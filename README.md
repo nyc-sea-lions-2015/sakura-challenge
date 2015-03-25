@@ -184,8 +184,8 @@ And that's how we'll figure out the endpoints of the branches on our tree.
 
 One last thing a `Turtle` can do is create a copy of itself. It does this with `spawn`:
 
-   var babyTurtle = t.spawn();
-   babyTurtle.pos;  // -> [114.3301270189222, 92.5]
+    var babyTurtle = t.spawn();
+    babyTurtle.pos;  // -> [114.3301270189222, 92.5]
 
 This will be useful to you.
 
