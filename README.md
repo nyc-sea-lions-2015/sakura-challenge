@@ -240,6 +240,8 @@ Some things to think about:
 
   * who decides when a tree is in bloom?
   * if you were to track seasons, where would you do that?
+  * relatedly, if you wanted to add functionality to pause and resume animation, where
+    would you do that?
 
 
 ## References ##
