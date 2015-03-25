@@ -82,7 +82,7 @@ Let's write three classes for the model: `Sakura`, `Branch`, and `World`.
 browser to call the function you provide every `n` milliseconds. `requestAnimationFrame(func)`
 instructs the browser to call `func` once, next time a frame needs to be drawn. Animation frames
 don't occur when the tab is in the background, so your tree will stop growing when the tab is in
-the background.
+the background if you use it.
 
 `Sakura`'s `tick` method should be pretty simple for now: it'll just call `tick` on its `trunk`,
 which is a `Branch`.
