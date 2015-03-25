@@ -4,7 +4,7 @@ Today, you're going to make a cherry blossom tree with Javascript.
 
 ## Learning Goals ##
 
-  * writing class-like structures in Javascript
+  * object oriented modeling in Javascript
   * [immediate mode graphics](http://en.wikipedia.org/wiki/Immediate_mode_%28computer_graphics%29)
     with [canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial)
   * [turtle graphics](http://en.wikipedia.org/wiki/Turtle_graphics)
@@ -16,13 +16,12 @@ Today, you're going to make a cherry blossom tree with Javascript.
 Let's model a cherry blossom tree from the ground up.
 
   * A tree has a trunk.
-  * As we follow the trunk upwards, it splits into `Branch`es. Let's call these
-    `Branch`es its `children`.
-  * As we follow each branch, we see that each branches splits into further
-    `Branch`es--it has `children` of its own.
-  * The trunk has a height, thickness, and its angle from the ground.
-  * `Branch`es have length and thickness, and the angle from the branch they branched from.
-  * `Branch`es that are thin enough may have flowers, if the tree is in bloom.
+  * The trunk has length and thickness.
+  * The trunk grows at some angle to the ground.
+  * As we follow the trunk upwards, it splits into branches.
+  * Branches also have length and thickness.
+  * Branches split off at some angle to their parent branch.
+  * Some branches have flowers.
 
 Trees also have a root system, of course, but let's not worry about that for
 now. Branches are also sometimes kindof twisty, but let's also not worry about
@@ -42,52 +41,43 @@ with several sprouts:
 
 ![Photo credit: Agustin Rafael Reyes](doc/sakura-dia1.jpg)
 
-But we'll model that as several branches:
+But we'll model that as several `Branch` instances:
 
 ![Photo credit: Agustin Rafael Reyes](doc/sakura-dia2.jpg)
 
 ## 1. Create the markup
 
-Write an `index.html`. Put a `<canvas>` tag and a `<code>` tag in it. Give them IDs.
+Write an `index.html` with a `<canvas>` tag and a `<code>` tag in it.
 Both should fill the entire window; you'll want to position them with
 `position: absolute`, and make their `width` and `height` the size of the window.
-
-Also in the HTML, put in a `<script>` tag, where we'll put the driver code. Leave
-it empty for now.
 
 Finally, create `sakura.js` and link it to the document with a `<script>` tag.
 
 ## 2. Write the model
 
-Let's write three classes for the model: `Sakura`, `Branch`, and `World`.
+Let's write two classes for the model: `Sakura` and `Branch`.
+
+The flow is going to work like this: `Sakura` sets up a timer which calls its own `tick`
+method. In `Sakura`'s `tick`, it'll call `tick` on its trunk (a `Branch`). In `Branch`'s `tick`,
+the branch will grow longer and thicker by a random amount, maybe sprout children, then call
+`tick` on all its children.
 
 `Sakura`:
-  * has a `trunk`, which is a `Branch`
-  * has a `tick` method
+  * has a `trunk` instance variable, which is a `Branch`.
+  * has a `tick` method, which calls `tick` on its trunk.
+  * [somehow arranges](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setInterval)
+    for its `tick` method to get called periodically.  
 
 `Branch`:
   * has `length`, `thickness`, `angle`, and `children` instance variables.
-  * has a `tick` method
+  * has a `tick` method, which grows the branch by a random amount and then calls `tick` on its children.
 
 `World`:
-  * has a `tree`, which is a `Sakura`
-  * has a `tick` method
-  * calls
-    [`requestAnimationFrame`](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame) in its constructor to request that the browser call its `tick`
-    method at the next
-    animation interval. You could also use
-    [`setInterval`](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setInterval) instead.
+  * has a `tree` instance varaiable, which is a `Sakura`
+  * has a `tick` method, which calls `tick` on its `tree`.
 
-`requestAnimationFrame` and `setInterval` differ in what they do. `setInterval(func, n)` instructs the
-browser to call the function you provide every `n` milliseconds. `requestAnimationFrame(func)`
-instructs the browser to call `func` once, next time a frame needs to be drawn. Animation frames
-don't occur when the tab is in the background, so your tree will stop growing when the tab is in
-the background if you use it.
 
-`Sakura`'s `tick` method should be pretty simple for now: it'll just call `tick` on its `trunk`,
-which is a `Branch`.
-
-`Branch`'s `tick` method is a bit more involved. On every `tick`, a `Branch` should grow a little
+`Branch`'s `tick` method is probably the most involved. On every `tick`, a `Branch` should grow a little
 bit longer and a little bit thicker. Use
 [`Math.random`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random) to have your branches grow by an uneven amount.
 
@@ -95,12 +85,7 @@ Also on every `tick`, your branch should (possibly) sprout a child. You'll again
 only this time, use it like a die roll. If `Math.random` is less than, I dunno, `0.005`, have
 your `Branch`'s `tick` method create a new `Branch` and add it to `children`.
 
-The `World` is just responsible for connecting a `Sakura` to the passage of time. Its constructor
-takes a `Sakura` instance. It also sets up a timer (either with `setInterval` or
-`requestAnimationFrame`), which will call its `tick` method every so often. The `World`'s `tick`
-method should just call `tick` on its `tree`.
-
-Finally, add some driver code in your HTML page that constructs a `Sakura` and a `World`.
+Finally, add some driver code in your HTML page that constructs a `Sakura`.
 
 If you put in some `console.log` statements, you should be able to open your HTML file and
 see that stuff is happening. That's not the greatest test, so let's print some more structured
@@ -108,34 +93,56 @@ output.
 
 ## 3. Print the sakura ##
 
-Write a `SakuraPrinter` class. This class will print a textual representation of your cherry
-blossom tree.
+`SakuraPrinter(tree, node)` takes an instance of `Sakura` and a DOM node where it'll output
+a textual representation of the tree's branches.
 
-`SakuraPrinter` should take a `Sakura` instance and a DOM node.
+`SakuraPrinter` should use
+[`requestAnimationFrame`](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame)
+to ask that the browser call its `draw` method on the next frame.
 
-The `SakuraPrinter` should also set up a timer, calling an instance method, `printTree`.
-This time, you should definitely use `requestAnimationFrame`, because we don't want to
-bother printing output when the tab isn't in use, and we don't have precise requirements
-as to how often `printTree` gets called—just so long as it's reasonably often.
+Unlike `setInterval`, `requestAnimationFrame` requests only a single frame, so you'll also have
+to call `requestAnimationFrame` again in `draw`. The pattern looks like this:
 
-`printTree` should set the `textContent` of the DOM node to a textual representation
-of the tree. For each branch, include its `angle`, `length`, and `thickness`.
+    SakuraPrinter.prototype.draw = function () {
+      requestAnimationFrame(this.draw);
+      // do some drawing
+    };
 
-Your display will look nicer if you indent the branches according to their depth, but
-you don't have to do this.
+`this` will be undefined unless you explicitly bind it in the constructor:
+
+    function SakuraPrinter(tree, node) {
+      // ...other setup...
+      this.draw = this.draw.bind(this);
+      this.draw();
+    }
+
+`SakuraPrinter`'s `draw` method should set the `textContent` of `node`. For each branch, include
+its `angle`, `length`, and `thickness`. The output will be more readable if you put every
+branch on a new line and indent each branch according to its depth.
 
 You might find that this is easier to do if you write a `toString` method on `Branch` and
 maybe `Sakura`.
 
-Yes, `printTree` should probably be a recursive function.
+Finally, add the printer to your driver code. You'll have to pass in the `<code>` tag in
+your document. I would give it an `id` and then find it with
+[`document.getElementById`](https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById).
+
+Your output will be more readable if you set the CSS property
+[`white-space: pre`](https://developer.mozilla.org/en-US/docs/Web/CSS/white-space)
+for the `<code>` element.
 
 ## 4. Draw the sakura ##
 
 Now, write a `SakuraSketcher` class. This class works just like `SakuraPrinter`, only
-the dom node it takes *must* be a `<canvas>`, and it will draw a representation of your cherry
+the DOM node it takes must be a `<canvas>`, and it will draw a representation of your cherry
 blossom tree.
 
-To do this, we're going to use turtle graphics. Add `turtle.js` to your HTML.
+To draw the lines, we're going to use the
+[canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial)
+drawing API.
+
+To figure out where to draw the lines this, we're going to use turtle graphics.
+Add `turtle.js` to your HTML.
 
 Turtle graphics work like this; imagine there's a turtle at point (100, 100) on the canvas:
 
@@ -145,16 +152,15 @@ Turtle graphics work like this; imagine there's a turtle at point (100, 100) on 
     t.x; // -> 100
     t.y; // -> 100
 
-This doesn't draw anything. In fact, the turtle never draws anything, she just helps you
-figure out coordinates.
+This doesn't draw anything. In fact, the turtle never draws anything, she can just move around
+and report her position.
 
-The turtle starts facing up:
+The turtle starts facing straight up, towards the top of the screen:
 
-    t.bearing; // -> [0, 1]
+    t.bearing; // -> [0, -1]
 
-`[0, -1]` means that if you ask the turtle to move one step, she'll move by `0` horizontally
-and `-1` pixel vertically. You don't usually need to look at your turtle's bearing; I'm just
-using this as an example.
+`[0, -1]` means that if you ask the turtle to move one step, she'll move by `0` pixels
+horizontally and `-1` pixel vertically.
 
 You can ask the turtle to go forward, and say how far:
 
@@ -198,7 +204,7 @@ In your `draw` method,
   * clear the canvas
   * create a `Turtle` and position it in the center of the window, at the bottom. Remember
     that y coordinates start with `0` at the *top* of your screen.
-  * call `drawBranch` on the tree's trunk
+  * call `drawBranch` on the tree's trunk.
 
 In your `drawBranch` method,
   * start a new path with `ctx.beginPath()`
@@ -210,8 +216,8 @@ In your `drawBranch` method,
     `ctx.lineTo` here.
   * set the width of the line we're about to draw to the branch's thickness by
     setting `ctx.lineWidth`.
-  * call `ctx.stroke` to draw the line
-  * draw all the branch's children
+  * call `ctx.stroke` to draw the line.
+  * draw all the branch's children.
 
 ## 5. Tune your tree ##
 
@@ -235,14 +241,6 @@ the rate at which a branch adds length dependent on its `depth`, for example.
 
 Just as every cherry tree is beautiful and unique, I leave the implementation of blossoms
 up to you.
-
-Some things to think about:
-
-  * who decides when a tree is in bloom?
-  * if you were to track seasons, where would you do that?
-  * relatedly, if you wanted to add functionality to pause and resume animation, where
-    would you do that?
-
 
 ## References ##
 
