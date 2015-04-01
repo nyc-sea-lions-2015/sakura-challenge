@@ -252,7 +252,7 @@ up to you.
 ## Conclusions & Further work ##
 
 In a broad sense, our tree is the expression of two simple rules: (1) branches grow, and
-(2) branches may have many children. In tuning your tree, you might notice that slight
+(2) branches branch. In tuning your tree, you might notice that slight
 changes in the rules can produce profound changes in the final result when the rules are
 applied recursively. In this regard, you and the sakura are the same.
 
