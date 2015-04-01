@@ -251,10 +251,17 @@ up to you.
 
 ## Conclusions & Further work ##
 
-In a broad sense, our tree is the expression of two simple rules: (1) branches grow, and
-(2) branches branch. In tuning your tree, you might notice that slight
-changes in the rules can produce profound changes in the final result when the rules are
-applied recursively. In this regard, you and the sakura are the same.
+Our tree is the expression of two simple rules: (1) branches grow, and (2)
+branches branch. It's a [fractal](http://en.wikipedia.org/wiki/Fractal)—an
+image that contains instances of itself. In tuning your tree, you might notice
+that since the rules are applied recursively, slight changes in the rules can
+produce profound changes in the final result. In this regard, you and your
+sakura are the same.
+
+Our tree represents a recursive structure as a collection of objects.
+You might be interested in other ways of representing fractals, such as
+[Lindenmayer systems](http://en.wikipedia.org/wiki/L-system) and
+[iterated function systems](http://en.wikipedia.org/wiki/Iterated_function_system).
 
 ## References ##
 
