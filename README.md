@@ -48,42 +48,42 @@ But we'll model that as several `Branch` instances:
 ## 1. Create the markup
 
 Write an `index.html` with a `<canvas>` tag and a `<code>` tag in it.
-Both should fill the entire window; you'll want to position them with
-`position: absolute`, and make their `width` and `height` the size of the window.
+Both should [fill the entire window](https://developer.mozilla.org/en-US/docs/Web/CSS/position).
 
-Finally, create `sakura.js` and link it to the document with a `<script>` tag.
+Finally, create `sakura.js` and link it to the document with a `<script>` tag. Also link in
+`turtle.js`, which we'll use later.
 
 ## 2. Write the model
 
 Let's write two classes for the model: `Sakura` and `Branch`.
 
-The flow is going to work like this: `Sakura` sets up a timer which calls its own `tick`
-method. In `Sakura`'s `tick`, it'll call `tick` on its trunk (a `Branch`). In `Branch`'s `tick`,
-the branch will grow longer and thicker by a random amount, maybe sprout children, then call
-`tick` on all its children.
-
 `Sakura`:
   * has a `trunk` instance variable, which is a `Branch`.
-  * has a `tick` method, which calls `tick` on its trunk.
-  * [somehow arranges](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setInterval)
-    for its `tick` method to get called periodically.  
+  * has a `tick` method, which:
+    * requests another animation frame using
+      [`requestAnimationFrame`](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame)
+    * and calls `tick` on the tree's `trunk`.
+    
 
 `Branch`:
-  * has `length`, `thickness`, `angle`, and `children` instance variables.
-  * has a `tick` method, which grows the branch by a random amount and then calls `tick` on its children.
+  * has `length`, `thickness`, `angle`, and `children` instance variables,
+  * has a `tree` instance variable, which is its parent `Sakura`,
+  * has a `tick` method, which:
+    * grows the branch by a
+      [random amount](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random),
+    * sprouts new children 0.5% of the time,
+    * and then calls `tick` on all its children.
 
-`World`:
-  * has a `tree` instance varaiable, which is a `Sakura`
-  * has a `tick` method, which calls `tick` on its `tree`.
+`requestAnimationFrame(func)` asks the browser to call `func` the next time a frame is needed. This
+is the preferred way to do Javascript animations in modern browsers.
 
+When the browser calls your function from `requestAnimationFrame`, `this` will be `undefined`.
+You can fix this in your `Sakura` constructor:
 
-`Branch`'s `tick` method is probably the most involved. On every `tick`, a `Branch` should grow a little
-bit longer and a little bit thicker. Use
-[`Math.random`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random) to have your branches grow by an uneven amount.
+    this.tick = this.tick.bind(this);
 
-Also on every `tick`, your branch should (possibly) sprout a child. You'll again use `Math.random`,
-only this time, use it like a die roll. If `Math.random` is less than, I dunno, `0.005`, have
-your `Branch`'s `tick` method create a new `Branch` and add it to `children`.
+This line of code is more complex than it appears. If you understand its ways, you will
+have a deeper knowledge of Javascript.
 
 Finally, add some driver code in your HTML page that constructs a `Sakura`.
 
@@ -93,64 +93,86 @@ output.
 
 ## 3. Print the sakura ##
 
-`SakuraPrinter(tree, node)` takes an instance of `Sakura` and a DOM node where it'll output
-a textual representation of the tree's branches.
+Write a `toString` method for your `Sakura` and `Branch` classes. `Branch`'s `toString` should
+return information about the branch and all its children, recursively.
 
-`SakuraPrinter` should use
-[`requestAnimationFrame`](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame)
-to ask that the browser call its `draw` method on the next frame.
+Next, have the Sakura constructor take a DOM node as an argument. Write a `debugPrint`
+method on `Sakura` that sets the `textContent` of that node to the value returned
+from `toString`.
 
-Unlike `setInterval`, `requestAnimationFrame` requests only a single frame, so you'll also have
-to call `requestAnimationFrame` again in `draw`. The pattern looks like this:
+Call `debugPrint` from `tick`.
 
-    SakuraPrinter.prototype.draw = function () {
-      requestAnimationFrame(this.draw);
-      // do some drawing
-    };
-
-`this` will be undefined unless you explicitly bind it in the constructor:
-
-    function SakuraPrinter(tree, node) {
-      // ...other setup...
-      this.draw = this.draw.bind(this);
-      this.draw();
-    }
-
-`SakuraPrinter`'s `draw` method should set the `textContent` of `node`. For each branch, include
-its `angle`, `length`, and `thickness`. The output will be more readable if you put every
-branch on a new line and indent each branch according to its depth.
-
-You might find that this is easier to do if you write a `toString` method on `Branch` and
-maybe `Sakura`.
-
-Finally, add the printer to your driver code. You'll have to pass in the `<code>` tag in
-your document. I would give it an `id` and then find it with
+Finally, pass a DOM node to `Sakura` in your driver code. Give the `<code>` tag an `id` and find it with
 [`document.getElementById`](https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById).
+(You could use jQuery, but you won't be doing any other DOM manipulation, so it seems excessive).
+
+When you reload your page, you should see (data about) your tree's growth.
 
 Your output will be more readable if you set the CSS property
 [`white-space: pre`](https://developer.mozilla.org/en-US/docs/Web/CSS/white-space)
-for the `<code>` element.
+for the `<code>` element and put newlines (`'\n'`) after each branch's output.
 
-## 4. Draw the sakura ##
+## 4. Keep your sakura from taking over the entirely world ##
 
-Now, write a `SakuraSketcher` class. This class works just like `SakuraPrinter`, only
-the DOM node it takes must be a `<canvas>`, and it will draw a representation of your cherry
-blossom tree.
+If you let your tab run long enough, your computer will start feeling sluggish, and then your tab
+will crash.
 
-To draw the lines, we're going to use the
-[canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial)
-drawing API.
+This is because the Sakura grows without bound, and since your branches replicate like bunnies,
+it's easy to overwhelm your computer.
+
+Fix this by having a `maxBranches` instance variable on `Sakura` global variable and keeping track
+objects that have been created. Stop sprouting branches if you have more than a million of them.
+
+## 4. Draw your sakura ##
+
+To draw our tree, we're going to draw one line for each `Branch`. The line's width will be
+defined by the `Branch`'s `thickness`, its length will be defined by the `Branch`'s length,
+and its position on the screen will be determined by its `angle` with respect to its parent,
+and the position of its parent.
+
+Add another argument to `Sakura`. This argument will be a
+[`<canvas>` element](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial).
+
+You'll need to set the `width` and the `height` of the canvas element to be the
+`canvas` element's `clientWidth` and `clientHeight`. This is kindof dumb, but yes, you
+have to do it.
+
+Also, have your `Sakura` get a canvas drawing context with `canvas.getContext('2d')` and
+save it in a `ctx` instance variable. A drawing context is an object with a whole bunch
+of drawing functions on it. When you call them, they draw stuff to the canvas.
+
+Add a `draw` method to both your `Branch` and `Sakura` classes, and call it from both their
+`tick`s.
+
+`Sakura`'s `draw` should clear the screen. That's all.
+
+`Branch`'s `draw` should draw a line on the canvas for the branch. Here's how to draw
+a line with a drawing context:
+
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.lineWidth = widthInPixels;
+  ctx.stroke();
+
+`x0`, `y0`, `x1`, `y1`, and `widthInPixels` are all values you specify. We know how wide
+we want the `Branch` to be, but how do we figure out its coordinates?
+
+We can use a turtle to help us.
+
+What's a turtle?
+
+### A brief discussion of turtles ###
 
 To figure out where to draw the lines this, we're going to use turtle graphics.
-Add `turtle.js` to your HTML.
 
 Turtle graphics work like this; imagine there's a turtle at point (100, 100) on the canvas:
 
     var t = new Turtle();
     t.pos = [100, 100];
     t.pos; // -> [100, 100]
-    t.x; // -> 100
-    t.y; // -> 100
+    t.x;   // -> 100
+    t.y;   // -> 100
 
 This doesn't draw anything. In fact, the turtle never draws anything, she can just move around
 and report her position.
@@ -162,7 +184,9 @@ The turtle starts facing straight up, towards the top of the screen:
 `[0, -1]` means that if you ask the turtle to move one step, she'll move by `0` pixels
 horizontally and `-1` pixel vertically.
 
-You can ask the turtle to go forward, and say how far:
+You don't need to use `bearing` directly.
+
+You can just ask the turtle to go forward, and say how far:
 
     t.fwd(5);
     t.pos;  // -> [100, 95]
@@ -173,7 +197,6 @@ Your turtle has now moved five pixels up the screen. Yay! You can also tell the 
     t.fwd(10);
     t.pos;  // -> [110, 95]
 
-So far, this doesn't seem that useful—we could have figured out the math ourselves.
 But you can tell the turtle to turn by any angle:
 
     t.turnLeft(30);
@@ -189,58 +212,35 @@ One last thing a `Turtle` can do is create a copy of itself. It does this with `
 
 This will be useful to you.
 
-Your `SakuraSketcher` class should have a `draw` method, which it should set up to
-be called with `requestAnimationFrame`, and a `drawBranch(branch, turtle)` method, which
-draws `branch` and all its descendants, using the position of `turtle` as a starting point.
-
-In your constructor, 
-  * set the `width` and the `height` of the canvas element to be the `canvas` element's
-    `clientWidth` and `clientHeight`. Yes, you have to do this. Yes, it's kindof dumb.
-  * get a drawing `context` with `canvas.getContext('2d')`, and save it in a `ctx` instance
-    variable. Getting a context might be expensive, and we don't want to do it on
-    every frame.
-
-In your `draw` method,
-  * clear the canvas
-  * create a `Turtle` and position it in the center of the window, at the bottom. Remember
-    that y coordinates start with `0` at the *top* of your screen.
-  * call `drawBranch` on the tree's trunk.
-
-In your `drawBranch` method,
-  * start a new path with `ctx.beginPath()`
-  * put the first point of the branch at the turtle's current position. You'll
-    use `ctx.moveTo` here.
-  * ask the turtle to turn by the branch's angle
-  * ask the turtle to walk forward by the branch's length.
-  * put the next point of the branch at the turtle's new position. You'll use
-    `ctx.lineTo` here.
-  * set the width of the line we're about to draw to the branch's thickness by
-    setting `ctx.lineWidth`.
-  * call `ctx.stroke` to draw the line.
-  * draw all the branch's children.
+You'll want to create a `new Turtle` for each frame, position it where you want
+the base of the tree, and then pass the turtle down from each branch to its children.
 
 ## 5. Tune your tree ##
 
 You may find that your tree doesn't look exactly how you want. It's randomly generated,
-of course, so it may never look *exactly* how you want, but you can tune how the tree
-grows by changing the constants in your `Branch`'s `tick` method. If your branches are
-too stocky, add a bit less `thickness`. If your tree is growing too thick with branches,
-make it less likely that a branch will produce a child.
+of course, so it may never look *exactly* how you want, but you can guide how the tree
+grows by changing the constants in your `Branch`'s `tick` method. Parameters like
+this are known as "tuning parameters"—numbers you can tweak until a program works how you
+want it to. If your branches are too stocky, add a bit less `thickness` on each frame. If your
+tree is growing too thick with branches, make it less likely that a branch will produce a child.
 
-Also, you might notice that if you leave your tree running for even a little while, it
-starts to crush your browser. It turns out that having branches generate branches which
-themselves generate branches can quickly produce a **lot** of objects. You can help
-this state of affairs by having your branches know their `depth` (how would they set this
-in the constructor?) and only allowing a branch to produce children if its `depth` is
-less than a certain number (7 seems to work ok for me).
-
-Once you're tracking `depth`, you now have another parameter to play with. You could make
-the rate at which a branch adds length dependent on its `depth`, for example.
+  * Given our data model, how might you create the appearance of longer, twistier branches?
+  * What if a branch's thickness didn't start off as 0?
+  * Can you replicate different styles of growth?
+  * What if we wanted the trunk to have special rules governing its growth? How might
+    we architect that?
 
 ## 6. Blossom your tree ##
 
 Just as every cherry tree is beautiful and unique, I leave the implementation of blossoms
 up to you.
+
+## Conclusions & Further work ##
+
+In a broad sense, our tree is the expression of two simple rules: (1) branches grow, and
+(2) branches may have many children. In tuning your tree, you might notice that slight
+changes in the rules can produce profound changes in the final result when the rules are
+applied recursively. In this regard, you and the sakura are the same.
 
 ## References ##
 
