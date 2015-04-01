@@ -59,7 +59,9 @@ Let's write two classes for the model: `Sakura` and `Branch`.
 
 `Sakura`:
   * has a `trunk` instance variable, which is a `Branch`.
-  * has a `tick` method, which:
+  * has a `tick` method—as in the sound a clock makes—which will get called
+    frequently to give the tree a chance to grow and, eventually, draw itself.
+    The `tick` function:
     * requests another animation frame using
       [`requestAnimationFrame`](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame)
     * and calls `tick` on the tree's `trunk`.
