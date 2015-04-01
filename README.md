@@ -78,12 +78,24 @@ Let's write two classes for the model: `Sakura` and `Branch`.
 is the preferred way to do Javascript animations in modern browsers.
 
 When the browser calls your function from `requestAnimationFrame`, `this` will be `undefined`.
-You can fix this in your `Sakura` constructor:
+You can fix this by binding `this.tick` to `this` your `Sakura` constructor:
 
-    this.tick = this.tick.bind(this);
+    function Sakura() {
+      // ...
+      this.tick = this.tick.bind(this);
+      this.tick(); // start animating
+    }
+    
+    Sakura.prototype.tick = function() {
+      requestAnimationFrame(this.tick);
+      // ...
+    };
 
-This line of code is more complex than it appears. If you understand its ways, you will
-have a deeper knowledge of Javascript.
+This line:
+
+      this.tick = this.tick.bind(this);
+
+Is a little enigma for you to ponder.
 
 Finally, add some driver code in your HTML page that constructs a `Sakura`.
 
@@ -106,9 +118,9 @@ Finally, pass a DOM node to `Sakura` in your driver code. Give the `<code>` tag 
 [`document.getElementById`](https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById).
 (You could use jQuery, but you won't be doing any other DOM manipulation, so it seems excessive).
 
-When you reload your page, you should see (data about) your tree's growth.
+When you run your page, you should see some information about all your tree's branches.
 
-Your output will be more readable if you set the CSS property
+Your output might be more readable if you set the CSS property
 [`white-space: pre`](https://developer.mozilla.org/en-US/docs/Web/CSS/white-space)
 for the `<code>` element and put newlines (`'\n'`) after each branch's output.
 
@@ -120,10 +132,10 @@ will crash.
 This is because the Sakura grows without bound, and since your branches replicate like bunnies,
 it's easy to overwhelm your computer.
 
-Fix this by having a `maxBranches` instance variable on `Sakura` global variable and keeping track
-objects that have been created. Stop sprouting branches if you have more than a million of them.
+Fix this by having a `maxBranches` instance variable on `Sakura` and keeping track of how many
+`Branch`es have been created. Stop sprouting branches if you have more than a million of them.
 
-## 4. Draw your sakura ##
+## 5. Draw your sakura ##
 
 To draw our tree, we're going to draw one line for each `Branch`. The line's width will be
 defined by the `Branch`'s `thickness`, its length will be defined by the `Branch`'s length,
@@ -147,7 +159,7 @@ Add a `draw` method to both your `Branch` and `Sakura` classes, and call it from
 `Sakura`'s `draw` should clear the screen. That's all.
 
 `Branch`'s `draw` should draw a line on the canvas for the branch. Here's how to draw
-a line with a drawing context:
+a line with a canvas context:
 
     ctx.beginPath();
     ctx.moveTo(x0, y0);
@@ -215,7 +227,7 @@ This will be useful to you.
 You'll want to create a `new Turtle` for each frame, position it where you want
 the base of the tree, and then pass the turtle down from each branch to its children.
 
-## 5. Tune your tree ##
+## 6. Tune your tree ##
 
 You may find that your tree doesn't look exactly how you want. It's randomly generated,
 of course, so it may never look *exactly* how you want, but you can guide how the tree
@@ -230,7 +242,7 @@ tree is growing too thick with branches, make it less likely that a branch will 
   * What if we wanted the trunk to have special rules governing its growth? How might
     we architect that?
 
-## 6. Blossom your tree ##
+## 7. Blossom your tree ##
 
 Just as every cherry tree is beautiful and unique, I leave the implementation of blossoms
 up to you.
