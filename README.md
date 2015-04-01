@@ -112,7 +112,7 @@ Your output will be more readable if you set the CSS property
 [`white-space: pre`](https://developer.mozilla.org/en-US/docs/Web/CSS/white-space)
 for the `<code>` element and put newlines (`'\n'`) after each branch's output.
 
-## 4. Keep your sakura from taking over the entirely world ##
+## 4. Keep your sakura from taking over the entire world ##
 
 If you let your tab run long enough, your computer will start feeling sluggish, and then your tab
 will crash.
@@ -149,11 +149,11 @@ Add a `draw` method to both your `Branch` and `Sakura` classes, and call it from
 `Branch`'s `draw` should draw a line on the canvas for the branch. Here's how to draw
 a line with a drawing context:
 
-  ctx.beginPath();
-  ctx.moveTo(x0, y0);
-  ctx.lineTo(x1, y1);
-  ctx.lineWidth = widthInPixels;
-  ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.lineWidth = widthInPixels;
+    ctx.stroke();
 
 `x0`, `y0`, `x1`, `y1`, and `widthInPixels` are all values you specify. We know how wide
 we want the `Branch` to be, but how do we figure out its coordinates?
