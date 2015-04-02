@@ -20,13 +20,23 @@ function Sakura(message){
 }
 
 Sakura.prototype.tick = function(){
+  this.length += Math.random();
+  this.thickness += (Math.random())/10;
 
+  var i = this.children.length;
+  while(--i >= 0){
+    if(Math.random()<=.005){
+      this.children.push(Branch());
+    }
+    this.children[i].tick();
+  }
+  tick();
 }
 
 function Branch(length, thickness, angle){
-  this.length = length
-  this.thickness = thickness;
-  this.angle = angle;
-  this.children = Branch();
+  this.length = .1;
+  this.thickness = .1;
+  this.angle = 20;
+  this.children = [];
 
 }
