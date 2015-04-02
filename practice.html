@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Canvas tutorial</title>
+    <script type="text/javascript">
+      function draw(){
+        var canvas = document.getElementById('tutorial');
+        if (canvas.getContext){
+          var ctx = canvas.getContext('2d');
+
+          var p = new Path2D("M10 10 h 80 v 40 h -80 Z");
+          ctx.stroke(p);
+        }
+      }
+    </script>
+    <style type="text/css">
+      canvas { border: 1px solid black; }
+    </style>
+  </head>
+  <body onload="draw();">
+    <canvas id="tutorial" width="500" height="500"></canvas>
+
+    <canvas id="stockGraph" width="150" height="150">
+      current stock price: $3.15 +0.15
+    </canvas>
+
+    <canvas id="clock" width="150" height="150">
+      <p>hello</p>
+      <img src="./doc/sakura-dia1.jpg " width="150" height="150" alt=""/>
+    </canvas>
+  </body>
+</html>
